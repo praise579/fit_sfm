@@ -43,6 +43,31 @@ func Init(c *global.Config, l *zap.Logger) {
 
 // fetchFile 从 URL 获取文件并保存
 func fetchFile(url, cachePath string) error {
+	// 支持 file:// 本地文件协议
+	if strings.HasPrefix(url, "file://") {
+		localPath := strings.TrimPrefix(url, "file://")
+		// 移除可能存在的 query 参数（如 ?_t=xxx&_r=xxx）
+		if idx := strings.IndexByte(localPath, '?'); idx != -1 {
+			localPath = localPath[:idx]
+		}
+		logger.Debug("📁 [LOCAL] Reading local file: " + localPath)
+		data, err := os.ReadFile(localPath)
+		if err != nil {
+			return fmt.Errorf("read local file error: %w", err)
+		}
+		if len(data) == 0 {
+			return fmt.Errorf("local file is empty")
+		}
+		if err := os.MkdirAll(filepath.Dir(cachePath), 0755); err != nil {
+			return fmt.Errorf("create cache dir error: %w", err)
+		}
+		if err := os.WriteFile(cachePath, data, 0644); err != nil {
+			return fmt.Errorf("write cache file error: %w", err)
+		}
+		logger.Debug("Successfully copied local file to cache", zap.String("cachePath", cachePath), zap.Int("len", len(data)))
+		return nil
+	}
+
 	// 添加随机数参数以绕过 CDN 缓存
 	urlWithParam := addCacheBusterParam(url)
 	logger.Debug("🚀 [DOWNLOAD] Starting fetch from URL: " + urlWithParam)
@@ -173,6 +198,10 @@ func GetFileModTime(path string) time.Time {
 // addCacheBusterParam 给 URL 添加随机数参数以绕过 CDN 缓存
 // Add cache buster parameter to URL to bypass CDN cache.
 func addCacheBusterParam(url string) string {
+	// file:// 本地文件不需要添加缓存buster参数
+	if strings.HasPrefix(url, "file://") {
+		return url
+	}
 	if strings.Contains(url, "_t=") || strings.Contains(url, "_r=") {
 		return url
 	}
