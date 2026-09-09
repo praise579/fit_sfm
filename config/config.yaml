@@ -46,7 +46,10 @@ templates:
     # 展示名称（用于日志/标识）
     name: "macOS 精简版"
     # 无节点时的兜底标记（写入 outbounds 的关键词，如直连规则）
-    no_node: "🎯 全球直连"
+    # 无节点匹配时的兜底出站 tag：NotesName 筛不到节点时会把它写入出站组 outbounds。
+    # 它必须是对应模板内真实存在的 outbound tag（官方模板用 DIRECT 直连出口），
+    # 否则渲染出的配置会引用不存在的出站，sing-box 校验失败。
+    no_node: "DIRECT"
     # 是否启用（Validate 要求至少启用一个模板）
     enabled: true
 
@@ -55,21 +58,21 @@ templates:
   openwrt:
     url: "https://raw.githubusercontent.com/haierkeys/free-network-tool/master/singbox/1.12.json"
     name: "OpenWRT"
-    no_node: "🎯 全球直连"
+    no_node: "DIRECT"
     enabled: true
 
   # 模板 key：ios，url 指向 sing-box 1.11 的 iOS 模板（远程示例）
   ios:
     url: "https://raw.githubusercontent.com/haierkeys/free-network-tool/master/singbox/1.11-ios.json"
     name: "iOS"
-    no_node: "🎯 全球直连"
+    no_node: "DIRECT"
     enabled: true
 
   # 模板 key：1.13-ios，url 指向 sing-box 1.13 的 iOS 模板（远程示例）
   1.13-ios:
     url: "https://raw.githubusercontent.com/haierkeys/free-network-tool/master/singbox/1.13-ios.json"
     name: "iOS 1.13"
-    no_node: "🎯 全球直连"
+    no_node: "DIRECT"
     enabled: true
     # 该模板独立刷新间隔，单位秒；不填则默认 1 小时
     update_interval: 3600

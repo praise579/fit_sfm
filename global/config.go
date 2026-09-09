@@ -219,7 +219,7 @@ func (c *Config) GetDefaultTemplateNoNode() string {
 	if tpl, exists := c.Templates[c.DefaultTemplate]; exists {
 		return tpl.NoNode
 	}
-	return "🎯 全球直连"
+	return "DIRECT"
 }
 // GetTemplateUpdateInterval 获取模板更新间隔
 func (c *Config) GetTemplateUpdateInterval(templateName string) time.Duration {
