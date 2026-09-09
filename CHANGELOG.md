@@ -21,6 +21,7 @@
   - 新增 `CHANGELOG.md`、`CONTRIBUTING.md`、`SECURITY.md` 与 `.github` 协作模板；
   - 根 `CLAUDE.md` 重写并增加文档地图；
   - `.gitignore` 追加根 `config.yaml`、`.ua/`（本地开发覆盖配置不再有误提交风险）。
+  - README 底部新增「上游与致谢」，声明 fork 自 `haierkeys/singbox-subscribe-convert`（Apache-2.0）并致谢模板源 `haierkeys/free-network-tool`。
 
 ### 官方本地模板库
 

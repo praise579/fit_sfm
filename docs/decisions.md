@@ -20,7 +20,7 @@
 
 **决策**：module 路径统一为 `github.com/praise579/fit_sfm`，同步修改全部源码 import 与 Makefile/CI 中的构建注入变量。
 
-**后果**：import 与仓库名一致，`go install`/引用方不再困惑；需注意与上游 fork 的关系说明（README 链接均已改指新仓库）。
+**后果**：import 与仓库名一致，`go install`/引用方不再困惑；需注意与上游 fork 的关系说明（README 链接均已改指新仓库）。该 fork 关系已于 README「上游与致谢」节明示（2026-09 闭环）。
 
 ---
 

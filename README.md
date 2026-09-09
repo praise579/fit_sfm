@@ -57,6 +57,19 @@ http://<host>:9000/?password=<你的密码>
 - **多模板**：请求可指定模板；`default_template` 兜底。
 - **可观测与运维**：`/health` 健康检查、`/refresh` 手动刷新、可选 Cloudflare 缓存清理、优雅关闭。
 
+## 上游与致谢
+
+本项目 fork 自 [haierkeys/singbox-subscribe-convert](https://github.com/haierkeys/singbox-subscribe-convert)（[Apache-2.0](LICENSE)），继承其完整 git 历史，原作者为 **HaierKeys**，特此致谢。独立仓库无法通过 GitHub fork 网络自动关联，故此处手动声明来源。
+
+相对上游，fit_sfm 的主要改动：
+
+- 模块路径由 `github.com/haierkeys/singbox-subscribe-convert` 统一为 `github.com/praise579/fit_sfm`，同步 import 与构建注入；
+- 文档体系重组为 README 登录页 + `docs/`（guide / development / decisions）；
+- 依许可合规重写 `pkg/logger`、`pkg/safe_close`（原声明源自 GPL-3.0 上游，Apache 下不可沿用）；
+- 官方本地模板库 `templates/` 及示例中的远程 ios/openwrt 模板源取自 [haierkeys/free-network-tool](https://github.com/haierkeys/free-network-tool)，一并致谢。
+
+原版代码见上方上游仓库链接。
+
 ## 相关
 
 - [贡献指南](CONTRIBUTING.md)　|　[变更记录](CHANGELOG.md)　|　[安全问题](SECURITY.md)
