@@ -1,66 +1,104 @@
+# ============================================================
+# sing-box 订阅转换服务 - 配置说明
+#
+# 本文件作为「配置字段的唯一事实源」，会通过 //go:embed 嵌入二进制，
+# 在未指定任何配置文件时作为默认配置使用（见 docs/guide/usage.md 的加载顺序）。
+# 部署时建议复制一份另行修改，不要改动仓库内这份示例。
+# 各字段详细用法：docs/guide/configuration.md
+# ============================================================
+
 # 服务器配置
 server:
+  # 监听端口（必填，范围 1-65535；可用环境变量 SERVER_PORT 覆盖）
   port: 9000
-  read_timeout: 15  # 秒
-  write_timeout: 15 # 秒
-  idle_timeout: 60  # 秒
+  # HTTP 读超时，单位秒（0 表示不限制）
+  read_timeout: 15
+  # HTTP 写超时，单位秒（0 表示不限制）
+  write_timeout: 15
+  # 空闲连接超时，单位秒（0 表示不限制）
+  idle_timeout: 60
 
 # 认证配置
 auth:
+  # 访问密码（必填，不能为空；可用环境变量 PASSWORD 覆盖）。
+  # 客户端在请求 URL 上以查询参数 password=<值> 传入，不匹配返回 401。
   password: "your_default_password"
 
 # 节点订阅
 subscription:
+  # 远程节点订阅 URL（必填；支持 http(s):// 与 file:// 本地文件；可用环境变量 SUBSCRIPTION_URL 覆盖）
   url: "https://raw.githubusercontent.com/haierkeys/free-network-tool/master/singbox/node-example.json"
-  timeout: 30  # 秒
-  refresh_interval: 2  # 分钟
+  # 抓取超时，单位秒
+  timeout: 30
+  # 节点订阅自动刷新间隔，单位分钟（必填 >0；可用环境变量 REFRESH_INTERVAL 覆盖）
+  refresh_interval: 2
 
-# 模板列表
+# 模板列表：每个模板对应一份独立的 sing-box 配置文件模板（JSON），
+# 可按客户端/版本拆分为多个模板，运行时通过请求参数选择。
 templates:
-  # 模板1：默认配置 OpenWRT
+  # 模板 key：default（默认模板），url 为模板文件远端地址
   default:
     url: "https://raw.githubusercontent.com/haierkeys/free-network-tool/master/singbox/1.12.json"
+    # 展示名称（用于日志/标识）
     name: "OpenWRT"
+    # 无节点时的兜底标记（写入 outbounds 的关键词，如直连规则）
     no_node: "🎯 全球直连"
+    # 是否启用（Validate 要求至少启用一个模板）
     enabled: true
 
-  # 模板2：ios 1.11
+  # 模板 key：ios，url 指向 sing-box 1.11 的 iOS 模板
   ios:
     url: "https://raw.githubusercontent.com/haierkeys/free-network-tool/master/singbox/1.11-ios.json"
     name: "iOS"
     no_node: "🎯 全球直连"
     enabled: true
 
-  # 模板3：ios 1.13
+  # 模板 key：1.13-ios，url 指向 sing-box 1.13 的 iOS 模板
   1.13-ios:
     url: "https://raw.githubusercontent.com/haierkeys/free-network-tool/master/singbox/1.13-ios.json"
     name: "iOS 1.13"
     no_node: "🎯 全球直连"
     enabled: true
+    # 该模板独立刷新间隔，单位秒；不填则默认 1 小时
     update_interval: 3600
 
-# 默认模板
+# 默认模板：请求未指定模板时使用（必填，且 key 必须存在于 templates 且已启用；
+# 可用环境变量 DEFAULT_TEMPLATE 覆盖）
 default_template: "default"
 
 # 缓存配置
 cache:
+  # 缓存目录（必填；节点与模板文件抓取后存放于此；可用环境变量 CACHE_DIR 覆盖）
   directory: "./storage/cache"
+  # 节点缓存文件名（实际文件 = directory/node_file）
   node_file: "node.json"
+  # 预留/未使用：模板缓存实际按 directory/template_<模板名>.json 自动生成，
+  # 无需在此指定模板文件名
   template_file: "template.json"
 
-# Cloudflare 配置
+# Cloudflare 配置（可选）
 cloudflare:
-  enabled: false  # 是否启用 Cloudflare 缓存清理
-  purge_url: ""   # Cloudflare 缓存清理 API 地址 (例如: https://api.cloudflare.com/client/v4/zones/YOUR_ZONE_ID/purge_cache)
-  api_token: ""   # Cloudflare API Token (推荐) - 在 Cloudflare 控制台创建
-  api_key: ""     # Cloudflare API Key (可选) - 与 api_email 一起使用
-  api_email: ""   # Cloudflare 账户邮箱 (可选) - 与 api_key 一起使用
+  # 是否启用 Cloudflare 缓存清理（手动 /refresh 时触发）
+  enabled: false
+  # Cloudflare 缓存清理 API 地址，例如：
+  # https://api.cloudflare.com/client/v4/zones/YOUR_ZONE_ID/purge_cache
+  purge_url: ""
+  # Cloudflare API Token（推荐；与 purge_url 配合，Authorization: Bearer <token>）
+  api_token: ""
+  # Cloudflare API Key（可选；与 api_email 搭配，使用 X-Auth-Key 头）
+  api_key: ""
+  # Cloudflare 账户邮箱（可选；与 api_key 搭配使用）
+  api_email: ""
 
 # 日志配置
 logging:
+  # 生产模式：文件输出使用 JSON 编码，便于日志采集
   production: true
+  # 日志文件路径（为空则仅输出到 stderr）
   file: "./storage/log/server.log"
-  level: "info"  # debug, info, warn, error
+  # 日志级别：debug / info / warn / error
+  level: "info"
+  # 以下三个为预留字段，当前未接线（日志为追加写入，尚无自动轮转）：
   max_size: 10   # MB
   max_backups: 3
   max_age: 7     # 天
