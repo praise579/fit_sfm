@@ -1,0 +1,521 @@
+{
+  "dns": {
+    "servers": [
+      { "type": "local", "tag": "local" },
+      { "type": "fakeip", "tag": "fakeip", "inet4_range": "198.18.0.0/16", "inet6_range": "fc00::/64" },
+      { "type": "udp", "tag": "cn", "server": "223.5.5.5" },
+      { "type": "https", "tag": "remote", "server": "cloudflare-dns.com", "domain_resolver": "cn", "detour": "🚀节点选择" }
+    ],
+    "rules": [
+      {
+        "domain": [
+          "instant.arubanetworks.com",
+          "setmeup.arubanetworks.com",
+          "router.asus.com",
+          "www.asusrouter.com"
+        ],
+        "domain_suffix": [
+          "acl4.ssr",
+          "ip6-localhost",
+          "ip6-loopback",
+          "internal",
+          "lan",
+          "local",
+          "localhost",
+          "hiwifi.com",
+          "leike.cc",
+          "miwifi.com",
+          "my.router",
+          "p.to",
+          "peiluyou.com",
+          "phicomm.me",
+          "router.ctc",
+          "routerlogin.com",
+          "tendawifi.com",
+          "zte.home",
+          "tplogin.cn",
+          "wifi.cmcc"
+        ],
+        "action": "route",
+        "server": "local"
+      },
+      {
+        "rule_set": [
+          "private"
+        ],
+        "action": "route",
+        "server": "local"
+      },
+      {
+        "rule_set": [
+          "fakeip-filter"
+        ],
+        "action": "route",
+        "server": "cn"
+      },
+      {
+        "rule_set": [
+          "trackerslist"
+        ],
+        "action": "route",
+        "server": "cn"
+      },
+      {
+        "rule_set": [
+          "ads"
+        ],
+        "action": "reject",
+        "method": "default"
+      },
+      {
+        "rule_set": [
+          "cn"
+        ],
+        "action": "route",
+        "server": "cn"
+      },
+      {
+        "query_type": [
+          "A",
+          "AAAA"
+        ],
+        "action": "route",
+        "server": "fakeip"
+      }
+    ],
+    "final": "remote",
+    "optimistic": {
+      "enabled": true,
+      "timeout": "3d"
+    },
+    "timeout": "10s"
+  },
+  "inbounds": [
+    { "tag": "tun-in", "type": "tun", "address": [ "172.19.0.1/30", "2001:0470:f9da:fdfa::1/64" ], "auto_route": true, "mtu": 9000, "stack": "system", "strict_route": true, "route_exclude_address": [ "192.168.0.0/16", "fc00::/7" ] },
+    { "tag": "mixed-in", "type": "mixed", "listen": "127.0.0.1", "listen_port": 7891, "users": [] }
+  ],
+  "outbounds": [
+    { "tag": "DIRECT", "type": "direct", "domain_resolver": { "server": "local" } },
+    { "tag": "REJECT", "type": "block" },
+    {{ Nodes }},
+
+    { "tag": "🚀节点选择", "type": "selector", "interrupt_exist_connections": true, "outbounds": [ "♻️自动选择", "🇨🇳港台节点", "🇯🇵日本节点", "🇰🇷韩国节点", "🇸🇬狮城节点", "🇺🇸美国节点", "🇬🇧英国节点", "🇩🇪德国节点", {{ "" | NotesName }} ], "default": "♻️自动选择" },
+    { "tag": "♻️自动选择", "type": "urltest", "url": "http://cp.cloudflare.com/generate_204", "interval": "3m", "tolerance": 50, "interrupt_exist_connections": false, "outbounds": [ {{ "" | NotesName }} ] },
+    { "tag": "🇯🇵日本节点", "type": "urltest", "url": "http://cp.cloudflare.com/generate_204", "interval": "3m", "tolerance": 50, "interrupt_exist_connections": false, "outbounds": [ {{ "JP|日本" | NotesName }} ] },
+    { "tag": "🇺🇸美国节点", "type": "urltest", "url": "http://cp.cloudflare.com/generate_204", "interval": "3m", "tolerance": 50, "interrupt_exist_connections": false, "outbounds": [ {{ "US|美国" | NotesName }} ] },
+    { "tag": "🇸🇬狮城节点", "type": "urltest", "url": "http://cp.cloudflare.com/generate_204", "interval": "3m", "tolerance": 50, "interrupt_exist_connections": false, "outbounds": [ {{ "SG|新加坡" | NotesName }} ] },
+    { "tag": "🇰🇷韩国节点", "type": "urltest", "url": "http://cp.cloudflare.com/generate_204", "interval": "3m", "tolerance": 50, "interrupt_exist_connections": false, "outbounds": [ {{ "KR|韩国" | NotesName }} ] },
+    { "tag": "🇬🇧英国节点", "type": "urltest", "url": "http://cp.cloudflare.com/generate_204", "interval": "3m", "tolerance": 50, "interrupt_exist_connections": false, "outbounds": [ {{ "GB|英国" | NotesName }} ] },
+    { "tag": "🇩🇪德国节点", "type": "urltest", "url": "http://cp.cloudflare.com/generate_204", "interval": "3m", "tolerance": 50, "interrupt_exist_connections": false, "outbounds": [ {{ "DE|德国" | NotesName }} ] },
+    { "tag": "🇨🇳港台节点", "type": "urltest", "url": "http://cp.cloudflare.com/generate_204", "interval": "3m", "tolerance": 50, "interrupt_exist_connections": false, "outbounds": [ {{ "HK|香港|TW|台湾" | NotesName }} ] },
+    { "tag": "🇨🇳国内直连", "type": "selector", "interrupt_exist_connections": true, "outbounds": [ "DIRECT" ], "default": "DIRECT" },
+    { "tag": "🌐国际直连", "type": "selector", "interrupt_exist_connections": true, "outbounds": [ "DIRECT" ], "default": "DIRECT" },
+
+    { "tag": "🤖AI网站", "type": "selector", "interrupt_exist_connections": true, "outbounds": [ "🚀节点选择", "🇺🇸美国节点", "🇯🇵日本节点", "🇸🇬狮城节点", "DIRECT" ], "default": "🚀节点选择" },
+
+    { "tag": "🎬媒体解锁", "type": "selector", "interrupt_exist_connections": true, "outbounds": [ "🚀节点选择", "♻️自动选择", "🇯🇵日本节点", "🇸🇬狮城节点", "🇺🇸美国节点", "DIRECT" ], "default": "🚀节点选择" },
+
+    { "tag": "🛑广告拦截", "type": "selector", "interrupt_exist_connections": true, "outbounds": [ "REJECT", "DIRECT" ], "default": "REJECT" },
+
+    { "tag": "🐟漏网之鱼", "type": "selector", "interrupt_exist_connections": true, "outbounds": [ "🚀节点选择", "♻️自动选择", "🇯🇵日本节点", "🇸🇬狮城节点", "🇺🇸美国节点", "DIRECT" ], "default": "🚀节点选择" }
+  ],
+  "route": {
+    "default_domain_resolver": "local",
+    "rules": [
+      {
+        "action": "sniff"
+      },
+      {
+        "protocol": "dns",
+        "action": "hijack-dns"
+      },
+      {
+        "ip_cidr": [
+          "198.18.0.0/16",
+          "fc00::/64"
+        ],
+        "action": "resolve",
+        "server": "remote"
+      },
+      {
+        "clash_mode": "关闭代理",
+        "action": "route",
+        "outbound": "DIRECT"
+      },
+      {
+        "clash_mode": "全局代理",
+        "action": "route",
+        "outbound": "🚀节点选择"
+      },
+      {
+        "domain": [
+          "instant.arubanetworks.com",
+          "setmeup.arubanetworks.com",
+          "router.asus.com",
+          "www.asusrouter.com"
+        ],
+        "domain_suffix": [
+          "acl4.ssr",
+          "ip6-localhost",
+          "ip6-loopback",
+          "internal",
+          "lan",
+          "local",
+          "localhost",
+          "hiwifi.com",
+          "leike.cc",
+          "miwifi.com",
+          "my.router",
+          "p.to",
+          "peiluyou.com",
+          "phicomm.me",
+          "router.ctc",
+          "routerlogin.com",
+          "tendawifi.com",
+          "zte.home",
+          "tplogin.cn",
+          "wifi.cmcc"
+        ],
+        "action": "route",
+        "outbound": "DIRECT"
+      },
+      {
+        "ip_is_private": true,
+        "action": "route",
+        "outbound": "DIRECT"
+      },
+      {
+        "rule_set": [
+          "private"
+        ],
+        "action": "route",
+        "outbound": "DIRECT"
+      },
+      {
+        "rule_set": [
+          "ads"
+        ],
+        "action": "route",
+        "outbound": "🛑广告拦截"
+      },
+      {
+        "domain": [
+          "apple.comscoreresearch.com"
+        ],
+        "domain_suffix": [
+          "aaplimg.com",
+          "akadns.net",
+          "apple-cloudkit.com",
+          "apple-dns.net",
+          "apple-mapkit.com",
+          "apple.co",
+          "apple.com",
+          "apple.com.cn",
+          "apple.news",
+          "appstore.com",
+          "cdn-apple.com",
+          "crashlytics.com",
+          "icloud-content.com",
+          "icloud.com",
+          "icloud.com.cn",
+          "itunes.com",
+          "me.com",
+          "mzstatic.com"
+        ],
+        "ip_cidr": [
+          "17.0.0.0/8",
+          "63.92.224.0/19",
+          "65.199.22.0/23",
+          "139.178.128.0/18",
+          "144.178.0.0/19",
+          "144.178.36.0/22",
+          "144.178.48.0/20",
+          "192.35.50.0/24",
+          "198.183.17.0/24",
+          "205.180.175.0/24"
+        ],
+        "action": "route",
+        "outbound": "DIRECT"
+      },
+      {
+        "domain_suffix": [
+          "aadrm.com",
+          "acompli.com",
+          "acompli.net",
+          "aka.ms",
+          "akadns.net",
+          "aspnetcdn.com",
+          "assets-yammer.com",
+          "azure.com",
+          "azure.net",
+          "azureedge.net",
+          "azureiotcentral.com",
+          "azurerms.com",
+          "bing.com",
+          "bing.net",
+          "bingapis.com",
+          "cloudapp.net",
+          "cloudappsecurity.com",
+          "edgesuite.net",
+          "gfx.ms",
+          "hotmail.com",
+          "live.com",
+          "live.net",
+          "lync.com",
+          "msappproxy.net",
+          "msauth.net",
+          "msauthimages.net",
+          "msecnd.net",
+          "msedge.net",
+          "msft.net",
+          "msftauth.net",
+          "msftauthimages.net",
+          "msftidentity.com",
+          "msidentity.com",
+          "msn.cn",
+          "msn.com",
+          "msocdn.com",
+          "msocsp.com",
+          "mstea.ms",
+          "o365weve.com",
+          "oaspapps.com",
+          "office.com",
+          "office.net",
+          "office365.com",
+          "officeppe.net",
+          "omniroot.com",
+          "onedrive.com",
+          "onenote.com",
+          "onenote.net",
+          "onestore.ms",
+          "outlook.com",
+          "outlookmobile.com",
+          "phonefactor.net",
+          "public-trust.com",
+          "sfbassets.com",
+          "sfx.ms",
+          "sharepoint.com",
+          "sharepointonline.com",
+          "skype.com",
+          "skypeassets.com",
+          "skypeforbusiness.com",
+          "staffhub.ms",
+          "svc.ms",
+          "sway-cdn.com",
+          "sway-extensions.com",
+          "sway.com",
+          "trafficmanager.net",
+          "uservoice.com",
+          "virtualearth.net",
+          "visualstudio.com",
+          "windows-ppe.net",
+          "windows.com",
+          "windows.net",
+          "windowsazure.com",
+          "windowsupdate.com",
+          "wunderlist.com",
+          "yammer.com",
+          "yammerusercontent.com",
+          "proxy.nihaox.cc.cd",
+          "gmicloud.ai",
+          "hub.oaifree.com"
+        ],
+        "domain_keyword": [
+          "1drv",
+          "microsoft"
+        ],
+        "action": "route",
+        "outbound": "DIRECT"
+      },
+      {
+        "domain_suffix": [
+          "services.googleapis.cn",
+          "xn--ngstr-lra8j.com",
+          "xn--ngstr-cn-8za9o.com"
+        ],
+        "action": "route",
+        "outbound": "🚀节点选择"
+      },
+      {
+        "domain_suffix": [
+          "265.com",
+          "2mdn.net",
+          "alt1-mtalk.google.com",
+          "alt2-mtalk.google.com",
+          "alt3-mtalk.google.com",
+          "alt4-mtalk.google.com",
+          "alt5-mtalk.google.com",
+          "alt6-mtalk.google.com",
+          "alt7-mtalk.google.com",
+          "alt8-mtalk.google.com",
+          "app-measurement.com",
+          "cache.pack.google.com",
+          "clickserve.dartsearch.net",
+          "crl.pki.goog",
+          "dl.google.com",
+          "dl.l.google.com",
+          "googletagmanager.com",
+          "googletagservices.com",
+          "gtm.oasisfeng.com",
+          "mtalk.google.com",
+          "ocsp.pki.goog",
+          "recaptcha.net",
+          "safebrowsing-cache.google.com",
+          "settings.crashlytics.com",
+          "ssl-google-analytics.l.google.com",
+          "toolbarqueries.google.com",
+          "tools.google.com",
+          "tools.l.google.com",
+          "www-googletagmanager.l.google.com"
+        ],
+        "action": "route",
+        "outbound": "DIRECT"
+      },
+      {
+        "rule_set": [
+          "ai"
+        ],
+        "action": "route",
+        "outbound": "🤖AI网站"
+      },
+      {
+        "rule_set": [
+          "media",
+          "mediaip"
+        ],
+        "action": "route",
+        "outbound": "🎬媒体解锁"
+      },
+      {
+        "rule_set": [
+          "trackerslist"
+        ],
+        "action": "route",
+        "outbound": "DIRECT"
+      },
+      {
+        "rule_set": [
+          "cn",
+          "cnip"
+        ],
+        "action": "route",
+        "outbound": "DIRECT"
+      },
+      {
+        "port": 443,
+        "network": "udp",
+        "action": "route",
+        "outbound": "REJECT"
+      },
+      {
+        "rule_set": [
+          "proxy"
+        ],
+        "action": "route",
+        "outbound": "🚀节点选择"
+      },
+      {
+        "domain_suffix": [
+          "cn"
+        ],
+        "action": "route",
+        "outbound": "DIRECT"
+      }
+    ],
+    "auto_detect_interface": true,
+    "final": "🐟漏网之鱼",
+    "rule_set": [
+      {
+        "tag": "fakeip-filter",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://github.com/DustinWin/ruleset_geodata/releases/download/sing-box-ruleset/fakeip-filter.srs",
+        "update_interval": "24h"
+      },
+      {
+        "tag": "ads",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://github.com/DustinWin/ruleset_geodata/releases/download/sing-box-ruleset/ads.srs",
+        "update_interval": "24h"
+      },
+      {
+        "tag": "private",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://github.com/DustinWin/ruleset_geodata/releases/download/sing-box-ruleset/private.srs",
+        "update_interval": "24h"
+      },
+      {
+        "tag": "trackerslist",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://github.com/DustinWin/ruleset_geodata/releases/download/sing-box-ruleset/trackerslist.srs",
+        "update_interval": "24h"
+      },
+      {
+        "tag": "ai",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://github.com/DustinWin/ruleset_geodata/releases/download/sing-box-ruleset/ai.srs",
+        "update_interval": "24h"
+      },
+      {
+        "tag": "media",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://github.com/DustinWin/ruleset_geodata/releases/download/sing-box-ruleset/media.srs",
+        "update_interval": "24h"
+      },
+      {
+        "tag": "mediaip",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://github.com/DustinWin/ruleset_geodata/releases/download/sing-box-ruleset/mediaip.srs",
+        "update_interval": "24h"
+      },
+      {
+        "tag": "proxy",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://github.com/DustinWin/ruleset_geodata/releases/download/sing-box-ruleset/proxy.srs",
+        "update_interval": "24h"
+      },
+      {
+        "tag": "cn",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://github.com/DustinWin/ruleset_geodata/releases/download/sing-box-ruleset/cn.srs",
+        "update_interval": "24h"
+      },
+      {
+        "tag": "cnip",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://github.com/DustinWin/ruleset_geodata/releases/download/sing-box-ruleset/cnip.srs",
+        "update_interval": "24h"
+      }
+    ],
+    "default_http_client": "rule-set"
+  },
+  "experimental": {
+    "cache_file": {
+      "enabled": true,
+      "store_fakeip": true,
+      "store_dns": true
+    },
+    "clash_api": {
+      "default_mode": "海外代理",
+      "external_controller": "127.0.0.1:9090",
+      "secret": ""
+    }
+  },
+  "http_clients": [
+    {
+      "tag": "rule-set",
+      "engine": "go",
+      "version": 2,
+      "detour": "🚀节点选择"
+    }
+  ]
+}

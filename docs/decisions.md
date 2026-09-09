@@ -45,3 +45,17 @@
 **决策**：本次文档以「从源码构建」为主要安装方式，不写死任何具体镜像名与徽章链接；待首次正式 Release 确定发布渠道后再补齐 README 顶部徽章与镜像示例。
 
 **后果**：README 短期内少几个链接/徽章，避免在文档中承诺尚未就绪的发布渠道；补记时属于纯文档追加，无重构成本。
+
+---
+
+## 2026-09 · 官方本地模板库：仓库根 templates/ 自包含，示例默认模板切本地 v5
+
+**背景**：服务模板源本就同时支持 `http(s)://` 与 `file://`，但官方示例的 `default` 模板此前指向第三方 `haierkeys/free-network-tool` 的远程文件，日常实际在用的 macOS + sing-box 1.14 模板则散落在仓库外的另一项目里，无法随 fit_sfm 版本化与分发。
+
+**决策**：
+1. 仓库根新增 `templates/` 官方本地模板库，迁入 `sing-box-macos-1.14.json`（源文件在 `free-network-tool`，**原文件保留**、以本仓库为正式维护源，接受双份并存需自行留意漂移）；
+2. 示例 `config/config.yaml` 模板列表改为**远程/本地混排**：`default` 模板 `url` 指向 `file://templates/sing-box-macos-1.14.json` 且 `default_template` 仍指向 `default`（开箱即本地 v5）；原 `key=default` 的远程 OpenWRT 模板改名 `openwrt` 保留；`subscription.url` 维持远程示例（订阅源不随仓库维护）；
+3. 模板源文件改动**不即时热更**（watcher 只监控缓存目录副本），改官方模板经 `/refresh` 或按 `refresh_interval` 定时重新拉取后生效——不为「源文件热更」新增 watcher 代码；
+4. `Dockerfile` 同步 `COPY templates/` 进镜像，容器内嵌默认配置可用。
+
+**后果**：clone 后在仓库根运行即离线获得官方模板，随 git 版本化、可评审；代价是 `file://` 相对路径以运行工作目录为基准（须在仓库根或 `run -d <仓库根>`），示例配置较纯远程多了目录约束；双份源（free-network-tool 保留）存在漂移风险；无服务代码改动。

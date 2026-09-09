@@ -154,18 +154,25 @@
 
 ## 多模板配置与多版本客户端
 
-同一批节点、不同客户端版本 → 配置多个模板、各自访问。例如 sing-box 1.12（OpenWrt）与低版本（iOS）需要不同格式的配置骨架：
+同一批节点、不同客户端版本 → 配置多个模板、各自访问。模板源 `http(s)://` 远程与 `file://` 本地可**在同一列表混排**，仓库自带官方模板即以本地 `file://` 加入（需在仓库根运行才命中）：
 
 ```yaml
 templates:
-  # OpenWRT singbox1.12 配置
+  # 默认模板 default：仓库自带本地官方模板（macOS + sing-box 1.14），
+  # file:// 指向仓库根 templates/sing-box-macos-1.14.json，随 git 版本化
   default:
-    url: "https://example.com/templates/default.json"
+    url: "file://templates/sing-box-macos-1.14.json"
+    name: "macOS 精简版"
+    no_node: "🎯 全球直连"
+    enabled: true
+
+  # openwrt / ios：远程模板源示例，与 default 混排在同一个列表
+  openwrt:
+    url: "https://example.com/templates/openwrt.json"
     name: "OpenWRT"
     no_node: "🎯 全球直连"
     enabled: true
 
-  # IOS singbox1.10 配置
   ios:
     url: "https://example.com/templates/ios.json"
     name: "IOS"
@@ -175,16 +182,19 @@ templates:
 default_template: "default"
 ```
 
-对应得到三个不同访问地址（节点内容一致，只是格式按模板区分）：
+对应得到不同访问地址（节点内容一致，只是格式按模板区分）：
 
 ```bash
-# 默认模板（default_template 指向 default，即 OpenWRT / sing-box 1.12）
+# 默认模板（default_template 指向 default，即本地官方 macOS / sing-box 1.14）
 curl "https://your-host/?password=xxx"
 
-# 显式指定 OpenWRT singbox1.12 配置
+# 显式指定本地官方模板
 curl "https://your-host/?password=xxx&template=default"
 
-# 显式指定 IOS singbox1.10 配置
+# 显式指定远程 OpenWRT 模板
+curl "https://your-host/?password=xxx&template=openwrt"
+
+# 显式指定远程 iOS 模板
 curl "https://your-host/?password=xxx&template=ios"
 ```
 

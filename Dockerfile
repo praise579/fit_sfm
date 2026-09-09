@@ -46,6 +46,9 @@ VOLUME /${P_NAME}/config
 VOLUME /${P_NAME}/storage
 COPY ./build/${TARGETOS}_${TARGETARCH}/${P_BIN} /${P_NAME}/
 
+# 官方本地模板库（默认配置 templates.default 以 file:// 指向仓库内模板）
+COPY templates/ /${P_NAME}/templates/
+
 # 将脚本复制到容器中
 COPY entrypoint.sh /entrypoint.sh
 

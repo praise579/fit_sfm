@@ -21,3 +21,11 @@
   - 新增 `CHANGELOG.md`、`CONTRIBUTING.md`、`SECURITY.md` 与 `.github` 协作模板；
   - 根 `CLAUDE.md` 重写并增加文档地图；
   - `.gitignore` 追加根 `config.yaml`、`.ua/`（本地开发覆盖配置不再有误提交风险）。
+
+### 官方本地模板库
+
+- 新增仓库根 `templates/`：随 git 版本化的官方模板 `sing-box-macos-1.14.json`（适用于 macOS + sing-box 1.14），改模板走 git 可评审、随发布分发。
+- 示例 `config/config.yaml` 模板列表改为**远程 / 本地混排**：`default` 默认模板改为指向仓库内 `file://templates/sing-box-macos-1.14.json`（`default_template` 不变）；原 `key=default` 的远程 OpenWRT 模板改名 `openwrt` 保留；`ios`、`1.13-ios` 与 `subscription.url` 保持远程示例。
+- `Dockerfile` 同步 `COPY templates/` 进镜像，容器默认配置开箱可用。
+- 说明：官方模板改动不即时热更（watcher 只监控缓存目录副本），`/refresh` 或到点定时自动拉取后生效。
+

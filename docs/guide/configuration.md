@@ -94,14 +94,21 @@ subscription:
 ```yaml
 # 模板列表
 templates:
-  # 模板 ID：default（例如 OpenWRT / sing-box 1.12）
+  # 模板 ID：default（默认；本仓库自带的本地官方模板，macOS + sing-box 1.14）
   default:
-    url: "https://example.com/templates/default.json"
+    url: "file://templates/sing-box-macos-1.14.json"
+    name: "macOS 精简版"
+    no_node: "🎯 全球直连"
+    enabled: true
+
+  # 模板 ID：openwrt（远程模板源示例）
+  openwrt:
+    url: "https://example.com/templates/openwrt.json"
     name: "OpenWRT"
     no_node: "🎯 全球直连"
     enabled: true
 
-  # 模板 ID：ios（例如 iOS / sing-box 1.10）
+  # 模板 ID：ios（另一远程示例，带独立更新间隔）
   ios:
     url: "https://example.com/templates/ios.json"
     name: "iOS"
@@ -115,8 +122,9 @@ default_template: "default"
 
 要点：
 
-- 每个模板的键（如 `default`、`ios`）即模板 ID；请求时通过 `?template=<ID>` 指定，不指定时使用 `default_template`。
-- `url`：模板文件地址（同样支持 `file://` 本地路径）。模板本质是含 pongo2 占位符的 JSON 文本，语法见 [templates.md](templates.md)。
+- 每个模板的键（如 `default`、`openwrt`、`ios`）即模板 ID；请求时通过 `?template=<ID>` 指定，不指定时使用 `default_template`。
+- `url`：模板文件地址，**同一列表可混排** `https://` 远程地址与 `file://` 本地文件（本地相对路径以运行工作目录为基准）。模板本质是含 pongo2 占位符的 JSON 文本，语法见 [templates.md](templates.md)。
+- 仓库根 `templates/` 是随 git 版本化的**官方本地模板库**，`config/config.yaml` 的默认 `default` 模板即指向其中 `sing-box-macos-1.14.json`；clone 后在仓库根运行（`run` 或 `run -d <仓库根>`）即离线可用。改官方模板直接走 git，无需另存。
 - `name`：模板显示名称，仅用于日志/标识，不影响请求参数。
 - `no_node`：无节点兜底出口。当节点列表为空、或模板用 `NotesName` 过滤器筛选无结果时，用它保证 `outbounds` 非空（示例为 `🎯 全球直连` 直连出口）。
 - `enabled`：是否启用。禁用的模板不会被加载，请求时返回 `Template ... not found or not enabled`。

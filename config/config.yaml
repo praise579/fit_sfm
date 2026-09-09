@@ -35,25 +35,37 @@ subscription:
 
 # 模板列表：每个模板对应一份独立的 sing-box 配置文件模板（JSON），
 # 可按客户端/版本拆分为多个模板，运行时通过请求参数选择。
+# 模板源支持 http(s):// 远程地址与 file:// 本地文件（本地相对路径以运行工作目录为基准），
+# 可在同一列表内混排；本仓库自带的官方模板位于仓库根 templates/ 目录，随 git 版本化。
 templates:
-  # 模板 key：default（默认模板），url 为模板文件远端地址
+  # 模板 key：default（默认模板，default_template 指向它）。
+  # url 指向仓库内本地官方模板（file://templates/…），适用于 macOS + sing-box 1.14，
+  # clone 后在仓库根运行（或 run -d 切换）即可离线使用，改它直接走 git 版本化。
   default:
-    url: "https://raw.githubusercontent.com/haierkeys/free-network-tool/master/singbox/1.12.json"
+    url: "file://templates/sing-box-macos-1.14.json"
     # 展示名称（用于日志/标识）
-    name: "OpenWRT"
+    name: "macOS 精简版"
     # 无节点时的兜底标记（写入 outbounds 的关键词，如直连规则）
     no_node: "🎯 全球直连"
     # 是否启用（Validate 要求至少启用一个模板）
     enabled: true
 
-  # 模板 key：ios，url 指向 sing-box 1.11 的 iOS 模板
+  # 模板 key：openwrt，url 为远程地址，演示 http(s):// 远程模板源
+  # （注：原 key 曾为 default，配合本地 default 切 v5 后改名 openwrt 保留远程示例）
+  openwrt:
+    url: "https://raw.githubusercontent.com/haierkeys/free-network-tool/master/singbox/1.12.json"
+    name: "OpenWRT"
+    no_node: "🎯 全球直连"
+    enabled: true
+
+  # 模板 key：ios，url 指向 sing-box 1.11 的 iOS 模板（远程示例）
   ios:
     url: "https://raw.githubusercontent.com/haierkeys/free-network-tool/master/singbox/1.11-ios.json"
     name: "iOS"
     no_node: "🎯 全球直连"
     enabled: true
 
-  # 模板 key：1.13-ios，url 指向 sing-box 1.13 的 iOS 模板
+  # 模板 key：1.13-ios，url 指向 sing-box 1.13 的 iOS 模板（远程示例）
   1.13-ios:
     url: "https://raw.githubusercontent.com/haierkeys/free-network-tool/master/singbox/1.13-ios.json"
     name: "iOS 1.13"
@@ -63,7 +75,7 @@ templates:
     update_interval: 3600
 
 # 默认模板：请求未指定模板时使用（必填，且 key 必须存在于 templates 且已启用；
-# 可用环境变量 DEFAULT_TEMPLATE 覆盖）
+# 可用环境变量 DEFAULT_TEMPLATE 覆盖）。本例 default 指向本地官方模板（macOS + sing-box 1.14）。
 default_template: "default"
 
 # 缓存配置
