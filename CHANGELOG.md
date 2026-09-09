@@ -22,6 +22,7 @@
   - 根 `CLAUDE.md` 重写并增加文档地图；
   - `.gitignore` 追加根 `config.yaml`、`.ua/`（本地开发覆盖配置不再有误提交风险）。
   - README 底部新增「上游与致谢」，声明 fork 自 `haierkeys/singbox-subscribe-convert`（Apache-2.0）并致谢模板源 `haierkeys/free-network-tool`。
+  - README 末尾新增「免责声明」，提示本项目仅供个人学习研究、使用风险由使用者自行承担。
 
 ### 官方本地模板库
 
