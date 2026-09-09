@@ -11,7 +11,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/haierkeys/singbox-subscribe-convert/pkg/fileurl"
+	"github.com/praise579/fit_sfm/pkg/fileurl"
 
 	"github.com/radovskyb/watcher"
 	"github.com/spf13/cobra"

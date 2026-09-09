@@ -7,7 +7,7 @@ import (
 	"time"
 
 	_ "github.com/gookit/goutil/dump"
-	"github.com/haierkeys/singbox-subscribe-convert/pkg/fileurl"
+	"github.com/praise579/fit_sfm/pkg/fileurl"
 	"gopkg.in/yaml.v3"
 )
 

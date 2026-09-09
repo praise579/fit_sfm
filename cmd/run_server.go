@@ -7,13 +7,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/haierkeys/singbox-subscribe-convert/global"
-	"github.com/haierkeys/singbox-subscribe-convert/internal/fetcher"
-	"github.com/haierkeys/singbox-subscribe-convert/internal/handler"
-	"github.com/haierkeys/singbox-subscribe-convert/internal/watcher"
-	"github.com/haierkeys/singbox-subscribe-convert/pkg/fileurl"
-	"github.com/haierkeys/singbox-subscribe-convert/pkg/logger"
-	"github.com/haierkeys/singbox-subscribe-convert/pkg/safe_close"
+	"github.com/praise579/fit_sfm/global"
+	"github.com/praise579/fit_sfm/internal/fetcher"
+	"github.com/praise579/fit_sfm/internal/handler"
+	"github.com/praise579/fit_sfm/internal/watcher"
+	"github.com/praise579/fit_sfm/pkg/fileurl"
+	"github.com/praise579/fit_sfm/pkg/logger"
+	"github.com/praise579/fit_sfm/pkg/safe_close"
 
 	"go.uber.org/zap"
 )

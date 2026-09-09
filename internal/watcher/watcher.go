@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/haierkeys/singbox-subscribe-convert/global"
+	"github.com/praise579/fit_sfm/global"
 
 	"github.com/fsnotify/fsnotify"
 	"go.uber.org/zap"

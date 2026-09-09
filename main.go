@@ -3,7 +3,7 @@ package main
 import (
 	_ "embed"
 
-	"github.com/haierkeys/singbox-subscribe-convert/cmd"
+	"github.com/praise579/fit_sfm/cmd"
 )
 
 //go:embed config/config.yaml

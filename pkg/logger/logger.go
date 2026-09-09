@@ -1,110 +1,91 @@
-/*
- * Copyright (C) 2020-2022, IrineSistiana
- *
- * This file is part of mosdns.
- *
- * mosdns is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * mosdns is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-
+// 包 logger 封装 go.uber.org/zap，提供应用日志实例构建与全局日志句柄。
 package logger
 
 import (
 	"fmt"
 	"os"
 
-	"github.com/haierkeys/singbox-subscribe-convert/pkg/fileurl"
+	"github.com/praise579/fit_sfm/pkg/fileurl"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
+// Config 描述一个日志实例的构建参数。
 type Config struct {
-	// Level, See also zapcore.ParseLevel.
+	// Level 日志级别，取值参见 zapcore.ParseLevel（如 debug/info/warn/error）。
 	Level string `yaml:"level"`
 
-	// File that logger will be writen into.
-	// Default is stderr.
+	// File 日志输出文件路径；为空时日志仅输出到 stderr。
 	File string `yaml:"file"`
 
-	// Production enables json output.
+	// Production 为 true 时文件输出采用 JSON 编码，便于日志采集。
 	Production bool `yaml:"production"`
 }
 
+// 全局默认日志：stderr 控制台输出、级别 info，可通过 SetLevel 动态调整。
 var (
 	stderr = zapcore.Lock(os.Stderr)
-	lvl    = zap.NewAtomicLevelAt(zap.InfoLevel)
-	l      = zap.New(zapcore.NewCore(zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig()), stderr, lvl))
+	level  = zap.NewAtomicLevelAt(zap.InfoLevel)
+	l      = zap.New(zapcore.NewCore(consoleEncoder(), stderr, level))
 	s      = l.Sugar()
 
 	nop = zap.NewNop()
 )
 
-func NewLogger(lc Config) (*zap.Logger, error) {
-
-	if !fileurl.IsExist(lc.File) {
-		fileurl.CreatePath(lc.File, os.ModePerm)
-	}
-
-	lvl, err := zapcore.ParseLevel(lc.Level)
-	if err != nil {
-		return nil, fmt.Errorf("invalid log level: %w", err)
-	}
-
-	var fileOut zapcore.WriteSyncer
-	if lf := lc.File; len(lf) > 0 {
-		f, _, err := zap.Open(lf)
-		if err != nil {
-			return nil, fmt.Errorf("open log file: %w", err)
-		}
-		fileOut = zapcore.Lock(f)
-
-		var fileEncoder zapcore.Encoder
-		if lc.Production {
-			fileEncoder = zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig())
-		} else {
-			fileEncoder = zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
-		}
-
-		consoleEncoder := zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
-
-		consoleCore := zapcore.NewCore(consoleEncoder, zapcore.NewMultiWriteSyncer(zapcore.AddSync(stderr)), lvl)
-		fileCore := zapcore.NewCore(fileEncoder, zapcore.NewMultiWriteSyncer(zapcore.AddSync(fileOut)), lvl)
-
-		// 使用 zapcore.NewTee 合并两个 Core
-		return zap.New(zapcore.NewTee(consoleCore, fileCore)), nil
-
-	} else {
-		return zap.New(zapcore.NewCore(zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig()), stderr, lvl)), nil
-	}
+func consoleEncoder() zapcore.Encoder {
+	return zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
 }
 
-// L is a global logger.
+// NewLogger 按 Config 构建 zap.Logger：仅有文件时为「stderr 控制台 + 文件」双写，
+// 无文件时仅输出到 stderr。
+func NewLogger(c Config) (*zap.Logger, error) {
+	lvl, err := zapcore.ParseLevel(c.Level)
+	if err != nil {
+		return nil, fmt.Errorf("invalid log level %q: %w", c.Level, err)
+	}
+
+	if c.File == "" {
+		return zap.New(zapcore.NewCore(consoleEncoder(), stderr, lvl)), nil
+	}
+
+	// 目标文件可能不存在：先确保其所在目录存在，再由 zap.Open 创建/追加文件。
+	if !fileurl.IsExist(c.File) {
+		_ = fileurl.CreatePath(c.File, os.ModePerm)
+	}
+	fileSyncer, _, err := zap.Open(c.File)
+	if err != nil {
+		return nil, fmt.Errorf("open log file: %w", err)
+	}
+
+	var fileEncoder zapcore.Encoder
+	if c.Production {
+		fileEncoder = zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig())
+	} else {
+		fileEncoder = consoleEncoder()
+	}
+
+	consoleCore := zapcore.NewCore(consoleEncoder(), stderr, lvl)
+	fileCore := zapcore.NewCore(fileEncoder, zapcore.Lock(fileSyncer), lvl)
+	return zap.New(zapcore.NewTee(consoleCore, fileCore)), nil
+}
+
+// L 返回全局日志实例。
 func L() *zap.Logger {
 	return l
 }
 
-// SetLevel sets the log level for the global logger.
-func SetLevel(l zapcore.Level) {
-	lvl.SetLevel(l)
+// SetLevel 动态调整全局日志实例的级别。
+func SetLevel(lv zapcore.Level) {
+	level.SetLevel(lv)
 }
 
-// S is a global logger.
+// S 返回全局日志实例的 Sugared 版本。
 func S() *zap.SugaredLogger {
 	return s
 }
 
-// Nop is a logger that never writes out logs.
+// Nop 返回一个丢弃所有日志的实例。
 func Nop() *zap.Logger {
 	return nop
 }

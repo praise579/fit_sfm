@@ -66,7 +66,7 @@ cfgFile		=	$(cfgDir)/config.yaml
 buildDir	=	$(projectRootDir)/build
 
 
-.PHONY: all build-all run test clean push-online push-dev build-macos-amd64 build-macos-arm64 build-linux-amd64 build-linux-arm64 build-winmdows-amd64
+.PHONY: all build-all run test clean push-online push-dev build-macos-amd64 build-macos-arm64 build-linux-amd64 build-linux-arm64 build-windows-amd64
 all: test build-all
 
 
@@ -76,7 +76,7 @@ build-all:
 	$(MAKE) build-macos-arm64
 	$(MAKE) build-linux-amd64
 	$(MAKE) build-linux-arm64
-	$(MAKE) build-winmdows-amd64
+	$(MAKE) build-windows-amd64
 
 
 run:
@@ -92,11 +92,8 @@ run:
 # 	mv $(binNode) $(buildNodeDir)
 
 test:
-	@echo $(DockerHubName)
-	@echo "Test Completed"
+	$(goTest) ./...
 
-# $(goTest) -v -race -coverprofile=coverage.txt -covermode=atomic $(sourceAdmDir)
-# $(goTest) -v -race -coverprofile=coverage.txt -covermode=atomic $(sourceNodeDir)
 clean:
 	rm -rf $(buildDir)
 
@@ -135,11 +132,6 @@ gox-linux:
 	$(CGO) gox ${LDFLAGS} -osarch="linux/amd64 linux/arm64" -output="$(buildDir)/{{.OS}}_{{.Arch}}/${P_BIN}"
 gox-all:
 	$(CGO) gox ${LDFLAGS} -osarch="darwin/amd64 darwin/arm64 linux/amd64 linux/arm64 windows/amd64" -output="$(buildDir)/{{.OS}}_{{.Arch}}/${P_BIN}"
-old-gen:
-	scripts/gormgen.sh sqlite storage/database/db.sqlite3  main  pre_  pre_  main_gen
-gen:
-	go run -v ./cmd/gorm_gen/gen.go -type sqlite -dsn storage/database/db.sqlite3
-	go run -v ./cmd/model_gen/gen.go
 
 define dockerImageClean
 	@echo "docker Image Clean"

@@ -14,7 +14,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/haierkeys/singbox-subscribe-convert/global"
+	"github.com/praise579/fit_sfm/global"
 )
 
 var (

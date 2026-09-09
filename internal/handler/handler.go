@@ -11,9 +11,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/haierkeys/singbox-subscribe-convert/global"
-	"github.com/haierkeys/singbox-subscribe-convert/internal/fetcher"
-	"github.com/haierkeys/singbox-subscribe-convert/pkg/util"
+	"github.com/praise579/fit_sfm/global"
+	"github.com/praise579/fit_sfm/internal/fetcher"
+	"github.com/praise579/fit_sfm/pkg/util"
 
 	"github.com/flosch/pongo2/v6"
 

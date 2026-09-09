@@ -1,4 +1,4 @@
-module github.com/haierkeys/singbox-subscribe-convert
+module github.com/praise579/fit_sfm
 
 go 1.24.1
 

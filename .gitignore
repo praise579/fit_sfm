@@ -82,3 +82,9 @@ Icon
 /config/config-dev.yaml
 /data/log
 /data/cache
+
+# -- 本项目补充 --------------------------------------
+# 根目录本地开发覆盖配置（含个人订阅与绝对路径，勿提交）
+/config.yaml
+# understand-anything 知识图谱产物
+/.ua/
