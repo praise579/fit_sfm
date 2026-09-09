@@ -88,3 +88,5 @@ Icon
 /config.yaml
 # understand-anything 知识图谱产物
 /.ua/
+# 仓库根按 README 快速开始编译的二进制产物
+/singbox-subscribe-convert
