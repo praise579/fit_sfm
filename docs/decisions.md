@@ -59,3 +59,13 @@
 4. `Dockerfile` 同步 `COPY templates/` 进镜像，容器内嵌默认配置可用。
 
 **后果**：clone 后在仓库根运行即离线获得官方模板，随 git 版本化、可评审；代价是 `file://` 相对路径以运行工作目录为基准（须在仓库根或 `run -d <仓库根>`），示例配置较纯远程多了目录约束；双份源（free-network-tool 保留）存在漂移风险；无服务代码改动。
+
+---
+
+## 2026-09 · no_node 兜底标记必须指向模板内真实存在的出站 tag
+
+**背景**：官方本地模板 `templates/sing-box-macos-1.14.json` 落库时，示例配置各模板 `no_node` 仍沿用旧体系的 `🎯 全球直连`，而该模板的真实直连出站 tag 是 `DIRECT` —— 二者不一致。`NotesName` 过滤器筛选无结果时会把这个 `no_node` 字符串**原样写入**出站组的 `outbounds`（`internal/handler` 不做存在性校验），渲染出的配置即引用一个不存在的出站，sing-box 加载校验失败。触发条件：订阅中恰好没有某地区节点。
+
+**决策**：示例配置 4 个模板的 `no_node` 统一改为 `DIRECT`（官方模板真实存在的直连出站），`global/config.go` 的兜底默认值同步对齐；将「`no_node` 必须是所渲染模板内真实存在的出站 tag」写进 `config/config.yaml` 注释（SSOT）与模板/配置文档。不改行为逻辑——机制本身（取 `default_template` 的 `no_node`）是设计使然，问题仅在取值与模板脱节。
+
+**后果**：兜底不再产生悬空引用；教训是迁移/自建模板时 `no_node` 必须与该模板出站 tag 对齐，且兜底值全局取自 `default_template` 指向模板，与其他模板各自的 `no_node` 无关（其它模板的 `no_node` 仅经 `{{ noNode }}` 上下文变量暴露给模板自身使用）。

@@ -98,21 +98,21 @@ templates:
   default:
     url: "file://templates/sing-box-macos-1.14.json"
     name: "macOS 精简版"
-    no_node: "🎯 全球直连"
+    no_node: "DIRECT"
     enabled: true
 
   # 模板 ID：openwrt（远程模板源示例）
   openwrt:
     url: "https://example.com/templates/openwrt.json"
     name: "OpenWRT"
-    no_node: "🎯 全球直连"
+    no_node: "DIRECT"
     enabled: true
 
   # 模板 ID：ios（另一远程示例，带独立更新间隔）
   ios:
     url: "https://example.com/templates/ios.json"
     name: "iOS"
-    no_node: "🎯 全球直连"
+    no_node: "DIRECT"
     enabled: true
     update_interval: 3600  # 可选，模板更新间隔（秒）
 
@@ -126,7 +126,7 @@ default_template: "default"
 - `url`：模板文件地址，**同一列表可混排** `https://` 远程地址与 `file://` 本地文件（本地相对路径以运行工作目录为基准）。模板本质是含 pongo2 占位符的 JSON 文本，语法见 [templates.md](templates.md)。
 - 仓库根 `templates/` 是随 git 版本化的**官方本地模板库**，`config/config.yaml` 的默认 `default` 模板即指向其中 `sing-box-macos-1.14.json`；clone 后在仓库根运行（`run` 或 `run -d <仓库根>`）即离线可用。改官方模板直接走 git，无需另存。
 - `name`：模板显示名称，仅用于日志/标识，不影响请求参数。
-- `no_node`：无节点兜底出口。当节点列表为空、或模板用 `NotesName` 过滤器筛选无结果时，用它保证 `outbounds` 非空（示例为 `🎯 全球直连` 直连出口）。
+- `no_node`：无节点匹配时的兜底出站 tag。模板用 `NotesName` 过滤器筛选无结果时，服务把它写入出站组的 `outbounds` 保证列表非空（取值来自 `default_template` 指向模板的 `no_node`）。⚠️ 该值**必须是对应模板内真实存在的出站 tag**（官方模板用 `DIRECT` 直连出口），否则渲染出的配置会引用不存在的出站，sing-box 加载校验失败。
 - `enabled`：是否启用。禁用的模板不会被加载，请求时返回 `Template ... not found or not enabled`。
 - `update_interval`：可选，单位秒，控制该模板缓存多久后视为过期并重新拉取；不配置时默认按 1 小时判断（代码默认）。
 - 每个模板有独立的本地缓存文件（按 `template_<模板ID>.json` 命名），多个模板并发更新、互不影响；`enabled` 开关可在配置热重载后动态生效。

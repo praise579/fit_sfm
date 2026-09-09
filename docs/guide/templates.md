@@ -27,9 +27,9 @@
     {
       "tag": "🚀 节点选择",
       "type": "selector",
-      "outbounds": ["🎯 全球直连"]
+      "outbounds": ["DIRECT"]
     },
-    { "tag": "🎯 全球直连", "type": "direct" },
+    { "tag": "DIRECT", "type": "direct" },
 
     {{ Nodes }}
   ]
@@ -60,7 +60,7 @@
 - **多关键词用 `|` 分隔，逻辑为 OR**：`"香港|新加坡"` 返回名称含「香港」**或**「新加坡」的节点。
 - 关键词会先去除首尾空格；使用空字符串 `""` 表示不过滤，返回**全部**节点名称。
 - 同一节点即使命中多个关键词也只会出现一次（按 `tag` 去重）。
-- **无匹配兜底**：筛选结果为空时，自动补入配置在模板上的 `no_node` 值（示例为 `🎯 全球直连`），保证 `outbounds` 非空、选择器可用。实现上兜底取 `default_template` 所指向模板的 `no_node`。
+- **无匹配兜底**：筛选结果为空时，自动补入 `no_node` 值（取值来自 `default_template` 所指向模板的 `no_node`），保证 `outbounds` 非空、选择器可用。⚠️ **该值必须是当前渲染模板内真实存在的出站 tag**（示例为 `DIRECT` 直连出口），否则会引用不存在的出站、sing-box 校验失败。
 
 ### 场景示例
 
@@ -121,7 +121,7 @@
     {
       "tag": "🚀 节点选择",
       "type": "selector",
-      "outbounds": ["🐸 手动切换", "♻️ 自动选择", "🇭🇰 香港节点", "🇯🇵 日本节点", "🎯 全球直连"]
+      "outbounds": ["🐸 手动切换", "♻️ 自动选择", "🇭🇰 香港节点", "🇯🇵 日本节点", "DIRECT"]
     },
     {
       "tag": "🐸 手动切换",
@@ -145,7 +145,7 @@
       "type": "selector",
       "outbounds": [ {{ "日本" | NotesName }} ]
     },
-    { "tag": "🎯 全球直连", "type": "direct" },
+    { "tag": "DIRECT", "type": "direct" },
 
     {{ Nodes }}
   ]
@@ -163,20 +163,20 @@ templates:
   default:
     url: "file://templates/sing-box-macos-1.14.json"
     name: "macOS 精简版"
-    no_node: "🎯 全球直连"
+    no_node: "DIRECT"
     enabled: true
 
   # openwrt / ios：远程模板源示例，与 default 混排在同一个列表
   openwrt:
     url: "https://example.com/templates/openwrt.json"
     name: "OpenWRT"
-    no_node: "🎯 全球直连"
+    no_node: "DIRECT"
     enabled: true
 
   ios:
     url: "https://example.com/templates/ios.json"
     name: "IOS"
-    no_node: "🎯 全球直连"
+    no_node: "DIRECT"
     enabled: true
 
 default_template: "default"
@@ -210,6 +210,6 @@ curl "https://your-host/?password=xxx&template=ios"
 - **占位符摆放**：`{{ Nodes }}` 应放在 JSON 数组元素的位置（通常为 `outbounds` 末尾），并保证前面元素与它之间保留逗号；`{{ "..." | NotesName }}` 应放在某个出站组 `outbounds` 的 `[ ]` 内部。
 - **命名一致**：`NotesName` 的大小写敏感子串匹配以节点 `tag` 为准，建议模板中的地区词与节点命名保持同一套习惯（如都用中文或都用 `HK`）。
 - **多关键词**：用 `|` 组合多种命名，例如 `"香港|HK|Hong Kong"` 可兼容多种命名方式。
-- **空结果兜底**：筛选不到节点时自动使用 `no_node` 直连出口，模板仍可用；若需要不同兜底出口，调整模板配置的 `no_node`（兜底取 `default_template` 所指向模板的 `no_node`）。
+- **空结果兜底**：筛选不到节点时自动使用 `no_node` 直连出口，模板仍可用；若需要不同兜底出口，调整模板配置的 `no_node`（兜底取 `default_template` 所指向模板的 `no_node`；该值必须指向模板内真实存在的出站 tag，官方模板用 `DIRECT`）。
 - **验证与排错**：把模板渲染后的输出存成文件并校验 JSON 合法性可快速定位逗号或引号问题；将 `logging.level` 设为 `debug` 可观察节点 / 模板加载与渲染报错详情。
 - **模板更新**：修改模板文件内容后，调用 `GET /refresh?password=<密码>` 手动拉取更新，或等待其 `update_interval`（默认 1 小时）过期后自动更新。

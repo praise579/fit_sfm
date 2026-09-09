@@ -27,5 +27,6 @@
 - 新增仓库根 `templates/`：随 git 版本化的官方模板 `sing-box-macos-1.14.json`（适用于 macOS + sing-box 1.14），改模板走 git 可评审、随发布分发。
 - 示例 `config/config.yaml` 模板列表改为**远程 / 本地混排**：`default` 默认模板改为指向仓库内 `file://templates/sing-box-macos-1.14.json`（`default_template` 不变）；原 `key=default` 的远程 OpenWRT 模板改名 `openwrt` 保留；`ios`、`1.13-ios` 与 `subscription.url` 保持远程示例。
 - `Dockerfile` 同步 `COPY templates/` 进镜像，容器默认配置开箱可用。
+- 修正兜底标记：各模板示例 `no_node` 由 `🎯 全球直连` 改为 `DIRECT`（官方模板真实存在的直连出站 tag），并同步 `global/config.go` 的兜底默认值与全部文档；避免 `NotesName` 筛选无结果时渲染出引用不存在出站、sing-box 校验失败的配置。
 - 说明：官方模板改动不即时热更（watcher 只监控缓存目录副本），`/refresh` 或到点定时自动拉取后生效。
 
