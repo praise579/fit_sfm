@@ -23,9 +23,15 @@ make build-macos-amd64      # macOS Intel
 make build-macos-arm64      # macOS Apple Silicon
 make build-windows-amd64    # Windows AMD64
 make build-all              # 以上全部平台
+
+# 本地 Docker（从源码起容器，只在本机操作，不推远程）
+make docker-rebuild         # 一键：停容器 → 重编译重打镜像 → 重新起
+make docker-up              # 后台起容器（挂仓库根 config.yaml）
+make docker-down            # 停并删除容器
+make docker-logs            # 跟踪日志
 ```
 
-产物在 `build/<os>_<arch>/sb-sub-c`。Air 热重载开发可用 `.air.toml`。
+产物在 `build/<os>_<arch>/sb-sub-c`。Air 热重载开发可用 `.air.toml`。本地 Docker 的镜像 / 容器 / 端口取值见 `Makefile` 顶部的 `LocalImage` / `LocalContainer` / `LocalPort`（端口须与所挂载 `config.yaml` 的 `server.port` 一致）。
 
 ## 配置加载顺序（优先级从高到低）
 

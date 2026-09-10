@@ -1,0 +1,11 @@
+# Docker 构建上下文瘦身。
+# 注意：build/ 下的 linux_* 是 Dockerfile COPY 的来源，不能排除，故只排除其它平台产物。
+.git
+.ua
+.idea
+.DS_Store
+storage
+config.yaml
+build/darwin_amd64
+build/darwin_arm64
+build/windows_amd64

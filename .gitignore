@@ -62,7 +62,6 @@ $RECYCLE.BIN/
 # Linux
 !.gitignore
 !.htaccess
-!.env
 *~
 
 # Mac OS X

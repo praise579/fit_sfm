@@ -137,7 +137,28 @@ docker run -d \
   <your-image>:<tag>
 ```
 
-仓库 `Makefile` 另提供了 `push-online`、`push-dev` 等镜像推送目标（需要先在 `.env` 中配置镜像仓库信息），如有发布需求可参考使用。
+上述手工步骤在仓库 `Makefile` 中有对应目标，可按需取用：`make docker-build`（构建本地镜像）、`make docker-up` / `docker-down` / `docker-logs` / `docker-rebuild`（起停与查看）、`make docker-clean`（清理镜像）。
+
+发布镜像到 Docker Hub 用 `make push-release`（正式）或 `make push-dev`（开发）。两者的镜像名与 tag 前缀在 `Makefile` 顶部的 `DockerHubUser` / `DockerHubName` / `ReleaseTagPre` / `DevelopTagPre` 中定义，**不需要** `.env`。
+
+### 5. 本地开发：从源码构建并运行容器
+
+改完代码要在容器里验证时，用这一组目标。它们**只在本机操作，不涉及任何远程仓库**：
+
+```bash
+make docker-build     # 编译 linux/arm64 并构建本地镜像 singbox-subscribe-convert:local
+make docker-up        # 后台起容器 sb-sub-c-local，挂载仓库根 config.yaml 与 storage/
+make docker-logs      # 跟踪日志
+make docker-down      # 停并删除容器
+make docker-rebuild   # 一键：停容器 → 重编译重打镜像 → 重新起
+```
+
+两点约定：
+
+- **本地镜像构建为 `linux/arm64`**（Apple Silicon 原生执行，免 QEMU 模拟）；面向发布的 `push-*` 仍为 `linux/amd64`，amd64 的回归验证放在推送前完成。取舍理由见 [decisions.md](../decisions.md)。
+- **端口由 `Makefile` 的 `LocalPort` 决定（默认 1900）**，须与所挂载 `config.yaml` 的 `server.port` 一致，否则映射出来的端口无人监听。
+
+> 本地开发**不使用**仓库根的 `docker-compose.yaml` —— 那份是给服务器部署配合 watchtower 用的，改它会影响线上。
 
 ## 从源码编译运行
 

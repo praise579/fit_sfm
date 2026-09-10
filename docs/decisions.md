@@ -69,3 +69,11 @@
 **决策**：示例配置 4 个模板的 `no_node` 统一改为 `DIRECT`（官方模板真实存在的直连出站），`global/config.go` 的兜底默认值同步对齐；将「`no_node` 必须是所渲染模板内真实存在的出站 tag」写进 `config/config.yaml` 注释（SSOT）与模板/配置文档。不改行为逻辑——机制本身（取 `default_template` 的 `no_node`）是设计使然，问题仅在取值与模板脱节。
 
 **后果**：兜底不再产生悬空引用；教训是迁移/自建模板时 `no_node` 必须与该模板出站 tag 对齐，且兜底值全局取自 `default_template` 指向模板，与其他模板各自的 `no_node` 无关（其它模板的 `no_node` 仅经 `{{ noNode }}` 上下文变量暴露给模板自身使用）。
+
+## 2026-09 · 本地开发走 `docker run` 而非 compose，本地镜像用 arm64
+
+**背景**：需要「改代码 → 在容器里看结果」的本地闭环，但既有两条路径都不适用。`docker-compose.yaml:3` 用的是 `image:` 而非 `build:`——照它 `up -d` 会去拉远程镜像，与「从源码构建」正好相反，且那份 compose 是给服务器部署配合 watchtower 用的。`Makefile` 原有的 `push-online` / `push-dev` 则是「构建 + 推送 Docker Hub」，没有任何「只构建、不推送」的目标。另有一个平台问题：开发机是 Apple Silicon（linux/arm64），而面向发布的镜像历来是 linux/amd64（`Dockerfile` 的 `COPY ./build/${TARGETOS}_${TARGETARCH}/${P_BIN}` 要求先有对应平台的产物）。
+
+**决策**：新增一组只在本机生效的 `docker-*` 目标（`build` / `up` / `down` / `rebuild` / `logs`），并作三项取舍：**(1)** 本地镜像构建为 `linux/arm64` 而非 amd64，避免开发机 QEMU 模拟的开销，amd64 的回归验证改由推送前的 `push-*` 承担；**(2)** 不引入 compose，本地用 `docker run` 直接起，使开发路径与服务器部署文件解耦，改开发流程不会波及线上；**(3)** 命名上 `docker-*` 专表「在本机操作」，对外发布另用 `push-*` 前缀，`push-online` 随之更名为 `push-release`。
+
+**后果**：本地迭代不再需要推送任何远程仓库即可验证容器行为，配置经挂载仓库根 `config.yaml` 注入（该文件路径全为相对路径，与 `entrypoint.sh` 切换到的 `/singbox-subscribe-convert/` 工作目录天然对齐）。代价是**本地验证不到 amd64 专属问题**（如特定架构下的字节序或 CGO 行为），必须依赖推送前那次 amd64 构建兜底；且本地端口由 `Makefile` 的 `LocalPort` 与配置的 `server.port` 共同决定，两者不一致时映射出来的端口无人监听。
