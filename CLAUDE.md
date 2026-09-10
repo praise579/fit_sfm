@@ -50,6 +50,7 @@ pkg/fileurl        // 文件/URL/路径处理
 pkg/logger         // zap 封装（全局句柄 + stderr/文件双写）
 pkg/safe_close     // 优雅关闭协调器
 pkg/util           // 杂项小工具
+scripts/           // 运维脚本：entrypoint.sh（容器 ENTRYPOINT）、docker_image_clean.sh（清理本项目镜像，make docker-clean 转发）
 templates/         // 官方本地模板库（如 sing-box-macos-1.14.json；默认模板 file:// 指向此处，随 git 版本化）
 config/config.yaml // 配置示例（内嵌，字段注释即权威说明）
 ```

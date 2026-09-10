@@ -32,3 +32,12 @@
 - 修正兜底标记：各模板示例 `no_node` 由 `🎯 全球直连` 改为 `DIRECT`（官方模板真实存在的直连出站 tag），并同步 `global/config.go` 的兜底默认值与全部文档；避免 `NotesName` 筛选无结果时渲染出引用不存在出站、sing-box 校验失败的配置。
 - 说明：官方模板改动不即时热更（watcher 只监控缓存目录副本），`/refresh` 或到点定时自动拉取后生效。
 
+### 脚本整理
+
+- 删除 4 个与本项目无关的残留脚本：`start.sh`、`start_console.sh`、`stop.sh`、`docker_redeploy.sh`。它们随上游快照一次性导入，全仓库零引用，且内含他项目标识符（`goapi_starfission`、`./new/apiRun`、端口 `8000-8002`、`configs/`、镜像 `xxx/xxxxx`），与本项目实际取值（`sb-sub-c`、端口 `9000`、`config/`）完全不符。
+- 在用脚本收归 `scripts/`：`entrypoint.sh`、`docker_image_clean.sh`（均经 `git mv`，保留历史）。
+- `Dockerfile` 的 `COPY entrypoint.sh` 同步为 `COPY scripts/entrypoint.sh`；`Makefile` 内调用路径同步为 `scripts/docker_image_clean.sh`。
+- `scripts/docker_image_clean.sh` 增加一行工作目录锚定（`cd "$(dirname "$0")/.."`）：该脚本以「当前目录名」作为待清理的项目名，搬入子目录后若从 `scripts/` 直接执行会认错项目，此行保持行为等价。
+- 新增 `make docker-clean` 转发目标，使镜像清理可独立调用（此前仅被 `push-online`/`push-dev` 间接调用）。
+- 修复 `push-online` / `push-dev` 依赖的不存在目标 `build-linux` → `build-linux-amd64`。该断链使这两个目标此前直接报 *No rule to make target*，`docker_image_clean.sh` 的唯一调用路径也因此从未跑通。
+

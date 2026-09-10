@@ -66,7 +66,7 @@ cfgFile		=	$(cfgDir)/config.yaml
 buildDir	=	$(projectRootDir)/build
 
 
-.PHONY: all build-all run test clean push-online push-dev build-macos-amd64 build-macos-arm64 build-linux-amd64 build-linux-arm64 build-windows-amd64
+.PHONY: all build-all run test clean docker-clean push-online push-dev build-macos-amd64 build-macos-arm64 build-linux-amd64 build-linux-arm64 build-windows-amd64
 all: test build-all
 
 
@@ -97,7 +97,11 @@ test:
 clean:
 	rm -rf $(buildDir)
 
-push-online:  build-linux
+# 转发：清理本项目的 docker 镜像（脚本见 scripts/docker_image_clean.sh）
+docker-clean:
+	$(call dockerImageClean)
+
+push-online: build-linux-amd64
 	$(call dockerImageClean)
 	docker build --platform linux/amd64  -t  $(DockerHubUser)/$(DockerHubName):latest -f Dockerfile .
 	docker tag  $(DockerHubUser)/$(DockerHubName):latest $(DockerHubUser)/$(DockerHubName):$(ReleaseTagPre)$(GitTag)
@@ -106,7 +110,7 @@ push-online:  build-linux
 	docker push $(DockerHubUser)/$(DockerHubName):latest
 
 
-push-dev:  build-linux
+push-dev: build-linux-amd64
 	$(call dockerImageClean)
 	docker build --platform linux/amd64 -t $(DockerHubUser)/$(DockerHubName):dev-latest -f Dockerfile .
 	docker tag $(DockerHubUser)/$(DockerHubName):dev-latest $(DockerHubUser)/$(DockerHubName):$(DevelopTagPre)$(GitTag)
@@ -135,7 +139,7 @@ gox-all:
 
 define dockerImageClean
 	@echo "docker Image Clean"
-	bash docker_image_clean.sh
+	bash scripts/docker_image_clean.sh
 endef
 
 define init
