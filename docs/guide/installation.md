@@ -147,7 +147,7 @@ docker run -d \
 
 ```bash
 make docker-build     # 编译 linux/arm64 并构建本地镜像 singbox-subscribe-convert:local
-make docker-up        # 后台起容器 sb-sub-c-local，挂载仓库根 config.yaml 与 storage/
+make docker-up        # 后台起容器 sb-sub-c-local，挂载仓库根 config-docker.yaml 与 storage/
 make docker-logs      # 跟踪日志
 make docker-down      # 停并删除容器
 make docker-rebuild   # 一键：停容器 → 重编译重打镜像 → 重新起
@@ -156,7 +156,8 @@ make docker-rebuild   # 一键：停容器 → 重编译重打镜像 → 重新�
 两点约定：
 
 - **本地镜像构建为 `linux/arm64`**（Apple Silicon 原生执行，免 QEMU 模拟）；面向发布的 `push-*` 仍为 `linux/amd64`，amd64 的回归验证放在推送前完成。取舍理由见 [decisions.md](../decisions.md)。
-- **端口由 `Makefile` 的 `LocalPort` 决定（默认 1900）**，须与所挂载 `config.yaml` 的 `server.port` 一致，否则映射出来的端口无人监听。
+- **端口由 `Makefile` 的 `LocalPort` 决定（默认 1900）**，须与所挂载 `config-docker.yaml` 的 `server.port` 一致，否则映射出来的端口无人监听。
+- **容器内的落点固定为 `/singbox-subscribe-convert/config/config.yaml`**，与服务器部署的 `config/` 目录约定一致。程序只按固定顺序查找 `config/config-dev.yaml` → `config.yaml` → `config/config.yaml`，挂成别的文件名不会被读取，而是**静默回落内嵌默认配置**（端口 9000、示例订阅地址），表现为映射出去的端口访问不到。
 
 > 本地开发**不使用**仓库根的 `docker-compose.yaml` —— 那份是给服务器部署配合 watchtower 用的，改它会影响线上。
 

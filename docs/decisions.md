@@ -76,4 +76,4 @@
 
 **决策**：新增一组只在本机生效的 `docker-*` 目标（`build` / `up` / `down` / `rebuild` / `logs`），并作三项取舍：**(1)** 本地镜像构建为 `linux/arm64` 而非 amd64，避免开发机 QEMU 模拟的开销，amd64 的回归验证改由推送前的 `push-*` 承担；**(2)** 不引入 compose，本地用 `docker run` 直接起，使开发路径与服务器部署文件解耦，改开发流程不会波及线上；**(3)** 命名上 `docker-*` 专表「在本机操作」，对外发布另用 `push-*` 前缀，`push-online` 随之更名为 `push-release`。
 
-**后果**：本地迭代不再需要推送任何远程仓库即可验证容器行为，配置经挂载仓库根 `config.yaml` 注入（该文件路径全为相对路径，与 `entrypoint.sh` 切换到的 `/singbox-subscribe-convert/` 工作目录天然对齐）。代价是**本地验证不到 amd64 专属问题**（如特定架构下的字节序或 CGO 行为），必须依赖推送前那次 amd64 构建兜底；且本地端口由 `Makefile` 的 `LocalPort` 与配置的 `server.port` 共同决定，两者不一致时映射出来的端口无人监听。
+**后果**：本地迭代不再需要推送任何远程仓库即可验证容器行为，配置经挂载仓库根 `config-docker.yaml` 注入到容器的 `/singbox-subscribe-convert/config/config.yaml`（落点须落在程序查找列表内，否则会被静默忽略并回落内嵌默认配置；该文件路径全为相对路径，与 `entrypoint.sh` 切换到的 `/singbox-subscribe-convert/` 工作目录天然对齐）。代价是**本地验证不到 amd64 专属问题**（如特定架构下的字节序或 CGO 行为），必须依赖推送前那次 amd64 构建兜底；且本地端口由 `Makefile` 的 `LocalPort` 与配置的 `server.port` 共同决定，两者不一致时映射出来的端口无人监听。

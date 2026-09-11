@@ -42,7 +42,7 @@ ReleaseTagPre = release-v
 DevelopTagPre = develop-v
 
 # 本地 Docker：镜像 / 容器 / 端口独立取值，与线上镜像和容器名互不干扰。
-# 端口须与本地 config.yaml 的 server.port 一致，否则映射出来的端口无人监听。
+# 端口须与 config-docker.yaml 的 server.port 一致，否则映射出来的端口无人监听。
 LocalImage     = $(DockerHubName):local
 LocalContainer = sb-sub-c-local
 LocalPort      = 1900
@@ -105,11 +105,15 @@ clean:
 docker-build: build-linux-arm64
 	docker build --platform linux/arm64 -t $(LocalImage) -f Dockerfile .
 
-# 后台起容器；挂仓库根 config.yaml（只读）与 storage/
+# 后台起容器；挂仓库根 config-docker.yaml（只读）与 storage/
+# 容器内落点与线上 docker-compose 的 config/ 目录约定一致：程序只认 config/config.yaml 等固定路径，
+# 挂成别的文件名会被忽略并静默回落内嵌默认配置（端口 9000）。
 docker-up:
+	@test -f $(projectRootDir)/config-docker.yaml || { \
+		echo "缺少 $(projectRootDir)/config-docker.yaml，无法注入配置"; exit 1; }
 	docker run -d --name $(LocalContainer) \
 		-p $(LocalPort):$(LocalPort) \
-		-v $(projectRootDir)/config.yaml:/$(P_NAME)/config.yaml:ro \
+		-v $(projectRootDir)/config-docker.yaml:/$(P_NAME)/config/config.yaml:ro \
 		-v $(projectRootDir)/storage:/$(P_NAME)/storage \
 		$(LocalImage)
 

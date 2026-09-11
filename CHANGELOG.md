@@ -47,8 +47,13 @@
 - 删除死代码：`include .env`、恒同分支的 `platform` 死 `ifeq`、未被引用的 `goClean` / `goGet` / `cfgDir` / `cfgFile`、`build-macos-amd64` 中未定义的 `$(bin)`，以及仅打印一行横幅的 `init` define。
 - 修复 `run` 的 `$(goRun)-v`：少一个空格导致 `-v` 被粘进 ldflags 参数内部，既污染 `BuildTime` 的注入值，又使 `-v` 从未真正生效。
 - `GitTag` 取值加 `--always` 兜底：仓库无 tag 时 `global.Version` 不再注入空串，退化为短 hash（`push-release` 的镜像 tag 随之从空的 `release-v` 变为带短 hash）。
-- 新增本地 Docker 目标：`docker-build` / `docker-up` / `docker-down` / `docker-rebuild` / `docker-logs`。本地镜像为 `linux/arm64`，端口取 `LocalPort`（默认 1900，对齐本地 `config.yaml` 的 `server.port`）；取舍理由见 [decisions.md](docs/decisions.md)。
+- 新增本地 Docker 目标：`docker-build` / `docker-up` / `docker-down` / `docker-rebuild` / `docker-logs`。本地镜像为 `linux/arm64`，端口取 `LocalPort`（默认 1900，对齐本地 `config-docker.yaml` 的 `server.port`）；取舍理由见 [decisions.md](docs/decisions.md)。
 - `push-online` 更名为 `push-release`（语义即「正式发布」），`push-dev` 不变；文档同步。
 - 新增 `.dockerignore`：构建上下文排除 `.git` / `.ua` / `storage` / `config.yaml` 与三个非 Linux 平台产物，**保留 `build/linux_*`**（Dockerfile COPY 的来源，不可排除）。
 - 删除被 git 跟踪却无人消费的 `.env`（原仅含一个拼错的、无消费者的 `RUNTIME_ENVIROMENT`）及 `.gitignore` 中空转的 `!.env` 规则。
+
+### 修复
+
+- 修复本地 Docker 容器端口访问不到：`docker-up` 把宿主 `config.yaml` 挂成了容器内 `/singbox-subscribe-convert/config-docker.yaml`，而该文件名不在程序的配置查找列表（`config/config-dev.yaml` → `config.yaml` → `config/config.yaml`）内，容器因此**静默回落内嵌默认配置**（`server.port: 9000`、示例订阅地址），与映射出的 `LocalPort`（1900）对不上，表现为 1900 端口无人监听。现改为挂载仓库根 `config-docker.yaml` 到 `/singbox-subscribe-convert/config/config.yaml`，与服务器部署的 `config/` 目录约定一致。
+- `docker-up` 增加宿主文件存在性校验：bind mount 源缺失时 Docker 会静默创建目录，使容器内配置落点变成目录，故障更难定位。
 
